@@ -12,8 +12,6 @@ const { env } = require('./env');
     DB_HOST: 'localhost',
     DB_PORT: '3306'
 };*/
-
-console.log(env)
 const connectDB = mysql.createConnection({
     host: env.DB_HOST,
     user: env.DB_USER,
@@ -39,8 +37,7 @@ router.post('/login', jsonParser, (req, res) => {
     let Password = req.body.password;
 
     let sqlQuery = `SELECT * FROM accounts WHERE email = '${Email}' AND password = '${Password}'`;
-    console.log(sql);
-
+    
     if (Email && Password) {
 
         connectDB.query(sqlQuery, function (error, results, fields) {
