@@ -1,0 +1,154 @@
+openapi : 3.0.3
+info:
+  title: Login API documentation
+  version: 1.0.0
+  description: This is a API to be used to login, register and create users
+  contact:
+    email: Rajaramsharma422@gmail.com
+  license:
+    name: Apache License, Version 2.0
+    url: http://www.apache.org/licenses/
+servers:
+  - url : http://localhost:3000/
+
+paths:
+  /:
+    get:
+      summary: "check servers is available"
+      description: this method is used to check if a server is available or not.
+      responses:
+          200:
+            description: server is available
+            content:
+              application/json:
+                schema:
+                  $ref: '#components/schemas/Server'
+          404:
+            description: server is not available
+  /user:
+    post:
+      tags:
+        - User
+      summary: Create user
+      description: this method is used to create user if user's email does not exist in database
+      operationId: createUser
+      requestBody:
+        description: created user object
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+          application/xml:
+              schema:
+                $ref: "#components/schemas/User"
+      responses:
+        200:
+          description: Created user successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#components/schemas/User"
+            application/xml:
+              schema:
+                $ref: "#components/schemas/User"
+        400:
+          description: Bad Request. May be user already exists or Email and/or Password is empty
+  /user/login:
+    post:
+      tags:
+        - User
+      summary: logs in user
+      description: logs user into current system
+      requestBody:
+        description: login user details
+        content:
+          application/json:
+            schema:
+              $ref: "#components/schemas/User"
+      responses:
+        200:
+          description: Login user successfully
+
+
+  /user/logout:
+    get:
+      tags:
+        - User
+      summary: logs user out
+      description: logs user out from current system
+      responses:
+        200:
+          description: user logout successfully
+
+components:
+  schemas:
+    Server:
+      type: object
+      properties:
+        status:
+          type : string
+          description : server status
+          example:  available
+      example:
+        status: available
+    Success:
+      type: object
+      properties:
+        result:
+          type : string
+          description : login status
+          example :  "Logged in successfully"
+      example:
+        result: "Logged in successfully"
+    User:
+      type: object
+      properties:
+        id:
+          type : integer
+          format: int64
+          example: 10
+        username:
+          type: string
+          example: theUser
+        firstName:
+          type: string
+          example: john
+        lastName:
+          type: string
+          example: James
+        email:
+          type: string
+          example: john@email.com
+        password:
+          type: string
+          example: "12345"
+        userStatus:
+          type: integer
+          description: User status
+          format: int32
+          example: 1
+        phone:
+          type: string
+          example: "94323424"
+      example:
+        id: 10
+        username: theUser
+        firstName: John
+        lastName: James
+        email: john@example.com
+        phone: "123456"
+        password: "12345"
+        userStatus: 1
+  securitySchemes:
+    login_auto:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: http://localhost:3000/oauth/authorize
+          scopes:
+            write:users: modify users in his account
+            read:users: read his account
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header

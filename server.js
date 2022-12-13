@@ -32,13 +32,18 @@ app.use(express.json())
 app.use('/', router);
 
 //load api docs
-const swaggerDocs = YAML.load('./login.yaml');
+const swaggerDocs = YAML.load('./swagger.yaml');
 app.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.get("/", (req, res) => {
-  res.render("home.ejs", { title: "Login System" });
+  if (listener.address().address === '::') {
+    res.status(200).send({ status: "available" });
+
+  } else {
+    res.status(200).send({ status: "unavailable" });
+  }
 });
 
-app.listen(port, () => {
+var listener = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });

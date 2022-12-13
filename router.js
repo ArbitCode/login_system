@@ -34,7 +34,7 @@ connectDB.connect(function (err) {
 });
 
 //register User
-router.post("/register", jsonParser, (req, res) => {
+router.post("/user", jsonParser, (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
 
@@ -61,7 +61,7 @@ router.post("/register", jsonParser, (req, res) => {
 });
 
 //login route
-router.post("/login", jsonParser, (req, res) => {
+router.post("/user/login", jsonParser, (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
     if (email && password) {
@@ -97,7 +97,7 @@ router.post("/login", jsonParser, (req, res) => {
 });
 
 //logout route
-router.get('/logout', (req, res) => {
+router.get('/user/logout', (req, res) => {
     req.session.destroy(function (err) {
         if (err) {
             console.log(err);
@@ -105,6 +105,11 @@ router.get('/logout', (req, res) => {
             res.status(200).send({ result: "Logout successfully" });
         }
     });
+});
+
+router.get('/oauth/authorize', (req, res) => {
+  console.log(req);
+  res.status(200).send({ result: "Welcome to authorize" });
 });
 
 //dashboard route
