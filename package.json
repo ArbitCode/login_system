@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js",
-    "watch": "nodemon --ext *"
+    "watch": "nodemon --ext, .yaml, *"
   },
   "author": "",
   "license": "ISC",
@@ -20,6 +20,9 @@
     "mysql": "^2.18.1",
     "nodemon": "^2.0.20",
     "pm2": "^5.2.2",
-    "uuid": "^9.0.0"
+    "swagger-jsdoc": "^6.2.5",
+    "swagger-ui-express": "^4.6.0",
+    "uuid": "^9.0.0",
+    "yamljs": "^0.3.0"
   }
 }

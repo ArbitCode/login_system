@@ -32,6 +32,7 @@ connectDB.connect(function (err) {
     console.log("database Connected successfully!");
   }
 });
+
 //register User
 router.post("/register", jsonParser, (req, res) => {
   let email = req.body.email;

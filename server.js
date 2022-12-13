@@ -3,6 +3,9 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const { v4: uuidv4 } = require('uuid');
+const swaggerJsDoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
+const YAML = require('yamljs');
 
 const router = require('./router');
 
@@ -28,10 +31,14 @@ app.use(express.json())
 
 app.use('/', router);
 
-app.get('/', (req, res) => {
-    res.render('home.ejs', {title: 'Login System'});
-})
+//load api docs
+const swaggerDocs = YAML.load('./login.yaml');
+app.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+app.get("/", (req, res) => {
+  res.render("home.ejs", { title: "Login System" });
+});
 
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on port ${port}`);
 });
