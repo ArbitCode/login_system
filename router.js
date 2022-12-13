@@ -1,69 +1,118 @@
-var express = require('express');
+var express = require("express");
 var router = express.Router();
-var bodyParser = require('body-parser');
+var bodyParser = require("body-parser");
 var jsonParser = bodyParser.json();
-var mysql = require('mysql');
-const { env } = require('./env');
+var mysql = require("mysql");
+const { env } = require("./env");
+const bcrypt = require("bcrypt");
 
 /*env = {
-    DB_PASSWORD: 'password',
+    DB_password: 'password',
     DB_USER: 'root',
     DB_NAME: 'db-name',
     DB_HOST: 'localhost',
     DB_PORT: '3306'
+    DB_TABLE: 'table-name'
 };*/
+
+//createConnection
 const connectDB = mysql.createConnection({
-    host: env.DB_HOST,
-    user: env.DB_USER,
-    database: env.DB_NAME,
-    port: env.DB_PORT,
-    password: env.DB_PASSWORD,
+  host: env.DB_HOST,
+  user: env.DB_USER,
+  database: env.DB_NAME,
+  port: env.DB_PORT,
+  password: env.DB_password,
 });
-
-
+//connectDB
 connectDB.connect(function (err) {
-    if (err) {
-        console.log(err);
-        console.log("database not connected!");
-    }
-    else {
+  if (err) {
+    console.log(err);
+    console.log("database not connected!");
+  } else {
     console.log("database Connected successfully!");
-    };
+  }
 });
+//register User
+router.post("/register", jsonParser, (req, res) => {
+  let email = req.body.email;
+  let password = req.body.password;
 
-//home route
-router.post('/login', jsonParser, (req, res) => {
-    let Email = req.body.email;
-    let Password = req.body.password;
-
-    let sqlQuery = `SELECT * FROM accounts WHERE email = '${Email}' AND password = '${Password}'`;
-    
-    if (Email && Password) {
-
-        connectDB.query(sqlQuery, function (error, results, fields) {
-            if (error) console.log(error.stack);
-            if (results.length > 0) {
-                req.session.loggedin = true;
-                req.session.email = Email;
-                res.redirect('/dashboard');
-            } else {
-                res.send('Incorrect Email and/or Password!');
-            }
-            res.end();
-        }
-        )
+  const sql = `SELECT * FROM ${env.DB_TABLE} WHERE email = '${email}'`;
+  connectDB.query(sql, function (err, result) {
+    if (err) throw err;
+    if (result.length > 0) {
+      res.status(400).send({ result: "User already exist" });
     } else {
-        res.send('Please enter Email and Password!');
+      console.log("User not exist");
+      //encrypt password
+      let saltRounds = bcrypt.genSaltSync(10);
+      let encryptPassword = bcrypt.hashSync(password, saltRounds);
+      //create user
+      let sqlQuery = `INSERT INTO ${env.DB_TABLE} (password, email) VALUES ('${encryptPassword}', '${email}')`;
+      connectDB.query(sqlQuery, function (err, result) {
+        if (err) throw err;
+        if (result) {
+          res.status(200).send({ result: "User created successfully" });
+        }
+      });
     }
+  });
 });
 
-router.get('/dashboard', (req, res) => {
+//login route
+router.post("/login", jsonParser, (req, res) => {
+  let email = req.body.email;
+  let password = req.body.password;
+    if (email && password) {
+        let sqlQuery = `SELECT * FROM ${env.DB_TABLE} WHERE email = '${email}'`;
+        connectDB.query(sqlQuery, function (error, results, fields) {
+            if (error) throw error;
+            if (results.length == 0) {
+                res.status(404).send({ result: "User not exist!" });
+            }
+            if (results.length > 0) {
+                const dbPassword = results[0].password;
+                //compare password
+                let isPasswordCorrect = bcrypt.compareSync(
+                    password,
+                    dbPassword,
+                    function (err, result) {
+                        if (err) throw err;
+                        return result;
+                    }
+                );
+
+                if (isPasswordCorrect) {
+                    req.session.email = email;
+                    res.status(200).send({ result: "Login successfully" });
+                } else {
+                    res.status(401).send({ result: "Incorrect email and/or Password!" });
+                }
+            }
+        });
+    }else {
+    res.status(400).send({ result: "Please enter email and Password!" });
+  }
+});
+
+//logout route
+router.get('/logout', (req, res) => {
+    req.session.destroy(function (err) {
+        if (err) {
+            console.log(err);
+        } else {
+            res.status(200).send({ result: "Logout successfully" });
+        }
+    });
+});
+
+//dashboard route
+router.get("/dashboard", (req, res) => {
     if (req.session.email) {
-        res.render('dashboard', { user:req.session.email});
-    }
-    else {
-        res.send('Please login to view this page!');
-    }
+      res.status(200).send({ result: "Welcome to dashboard" });
+  } else {
+    res.status(404).send({ result: "Please login first" });
+  }
 });
 
 module.exports = router;
